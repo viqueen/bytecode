@@ -3,13 +3,18 @@
  */
 package org.labset.bytecode.source;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
+import org.labset.bytecode.FieldInfo;
 import org.labset.bytecode.Opcode;
 import org.labset.bytecode.Utils;
 import org.labset.bytecode.attr.Code;
 import org.labset.bytecode.attr.LineNumberTable;
 import org.labset.bytecode.attr.LocalVariableTable;
+import org.labset.bytecode.cp.CONSTANT_Fieldref;
+import org.labset.bytecode.cp.CONSTANT_Utf8;
 import org.labset.bytecode.cp.CPInfo;
 import org.labset.bytecode.node.*;
 
@@ -33,11 +38,11 @@ public class StatementBuilder {
   private final byte[] byteCode;
 
   private boolean executed;
-  
+
   public StatementBuilder(final CPInfo[] pConstantPool, final Code pCode) {
     this(pConstantPool, pCode, 0, pCode.getCode().length);
   }
-  
+
   public StatementBuilder(final CPInfo[] pConstantPool, final Code pCode,
       final int pStart, final int pEnd) {
     constantPool = pConstantPool;
@@ -127,6 +132,12 @@ public class StatementBuilder {
       case Opcode.LLOAD_3:
         return consumeLOADVARIABLE(pPos, pOpcode - Opcode.LLOAD_0);
 
+      case Opcode.ALOAD_0:
+      case Opcode.ALOAD_1:
+      case Opcode.ALOAD_2:
+      case Opcode.ALOAD_3:
+        return consumeLOADVARIABLE(pPos, pOpcode - Opcode.ALOAD_0);
+
       case Opcode.ILOAD:
       case Opcode.LLOAD:
       case Opcode.DLOAD:
@@ -146,16 +157,21 @@ public class StatementBuilder {
       case Opcode.LRETURN:
         return consumeRETURNVALUE(pPos);
 
+      case Opcode.PUTFIELD:
+        return consumePUTFIELD(pPos);
+
       case Opcode.RETURN:
-        consumeRETURN(pPos);
+        return consumeRETURN(pPos);
+        
       case Opcode.NEW:
         return consumeNEW(pPos);
       case Opcode.DUP:
-        consumeDUP(pPos);
+        return consumeDUP(pPos);
+        
       case Opcode.LDC:
         return consumeLDC(pPos, byteCode[pPos + 1]);
       default:
-        throw new Exception("unknown opcode");
+        throw new Exception(String.format("unknown opcode %s", pOpcode));
     }
   }
 
@@ -170,7 +186,7 @@ public class StatementBuilder {
     stack.push(variable);
     return pPos + 1;
   }
-  
+
   private int consumeOPERATION(int pPos, Operation.Type pType) {
     ValueNode right = (ValueNode) stack.pop();
     ValueNode left = (ValueNode) stack.pop();
@@ -183,12 +199,36 @@ public class StatementBuilder {
     return pPos + 1;
   }
 
+  private int consumePUTFIELD(int pPos) {
+    int index = unsignedShortAt(pPos + 1);
+    CONSTANT_Fieldref fieldRef = Utils.getCPInfo(constantPool, index,
+        CONSTANT_Fieldref.class).get();
+    String className = Utils.getClassName(constantPool,
+        fieldRef.getClassIndex());
+    Variable variable = Utils.getFieldVariable(constantPool,
+        fieldRef.getNameAndTypeIndex());
+    FieldNode field = new FieldNode(variable.getDescriptor(),
+        variable.getValue(), className, false);
+
+    ValueNode value = (ValueNode) stack.pop();
+    BaseNode node = stack.pop();
+
+    statements.add(new AssignNode(new InvocationNode(node, field), value,
+        AssignNode.Type.NONFIRST));
+
+    return pPos + 3;
+  }
+
+  private int unsignedShortAt(int pPos) {
+    return ((byteCode[pPos] & 0xFF) << 8) + (byteCode[pPos + 1] & 0xFF);
+  }
+
   private int consumeSTOREVARIABLE(int pPos, int pIndex) {
     throw new UnsupportedOperationException("NYI");
   }
 
   private int consumeRETURN(int pPos) {
-    throw new UnsupportedOperationException("NYI");
+    return pPos + 1;
   }
 
   private int consumeNEW(int pPos) {

@@ -89,7 +89,11 @@ public class ClassFile {
   }
 
   @Init
-  public void init() {
+  private void init() {
+    // for each method initialize the LocalVariableTable attribute
+    // if none available then create it by using the method descriptor
+    // TODO: once component injection is ready, move this code
+    // to MethodInfo.init
     for (MethodInfo method : methods) {
       Utils.getAttribute(method.getAttributes(), Code.class).ifPresent(
           code -> {
@@ -111,8 +115,7 @@ public class ClassFile {
                 localVariableTable.getVariables()
                     .put(
                         index,
-                        Variable.create(type, String.format("pArg%s", index),
-                            false));
+                        Variable.create(type, String.format("pArg%s", index), false));
                 index++;
               }
               code.setLocalVariableTable(localVariableTable);

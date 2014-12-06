@@ -13,6 +13,7 @@ public class Operation extends ValueNode {
   private Type operator;
 
   public Operation(ValueNode pLeft, ValueNode pRight, Type pOperator) {
+    super("", "");
     left = pLeft;
     right = pRight;
     operator = pOperator;

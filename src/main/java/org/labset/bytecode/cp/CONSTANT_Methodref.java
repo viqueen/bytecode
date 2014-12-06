@@ -14,9 +14,9 @@ import org.codehaus.preon.buffer.ByteOrder;
 @TypePrefix(value = "10", size = 8)
 public class CONSTANT_Methodref implements CPInfo {
 
-    @BoundNumber(size="16", byteOrder = ByteOrder.BigEndian)
-    private int classIndex;
-    @BoundNumber(size="16", byteOrder = ByteOrder.BigEndian)
-    private int nameAndTypeIndex;
-    
+  @BoundNumber(size = "16", byteOrder = ByteOrder.BigEndian)
+  private int classIndex;
+  @BoundNumber(size = "16", byteOrder = ByteOrder.BigEndian)
+  private int nameAndTypeIndex;
+
 }

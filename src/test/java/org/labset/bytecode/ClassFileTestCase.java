@@ -53,7 +53,7 @@ public class ClassFileTestCase {
     CPInfo[] constantPool = classFile.getConstantPool();
 
     Assert.assertEquals(5, classFile.getFields().length);
-    Assert.assertEquals(2, classFile.getMethods().length);
+    Assert.assertEquals(3, classFile.getMethods().length);
 
     FieldInfo field = classFile.getFields()[0];
     Assert.assertEquals("firstName",
@@ -77,5 +77,22 @@ public class ClassFileTestCase {
     List<BaseNode> statements = builder.build();
     Assert.assertEquals(1, statements.size());
     Assert.assertTrue(statements.get(0) instanceof ReturnNode);
+  }
+
+  @Test
+  public void testDecompileMethodWithThisReference() throws Exception {
+    ClassFile classFile = Codecs.decode(codec, byteCode);
+    CPInfo[] constantPool = classFile.getConstantPool();
+    MethodInfo method = classFile.getMethods()[2];
+    Assert
+        .assertEquals(
+            "setFirstName",
+            Utils
+                .getCPInfo(constantPool, method.getNameIndex(),
+                    CONSTANT_Utf8.class).get().getValue());
+    Code code = Utils.getAttribute(method.getAttributes(), Code.class).get();
+    StatementBuilder builder = new StatementBuilder(constantPool, code);
+    List<BaseNode> statements = builder.build();
+    
   }
 }

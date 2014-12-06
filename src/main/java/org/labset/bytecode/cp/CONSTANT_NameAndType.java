@@ -15,8 +15,16 @@ import org.codehaus.preon.annotation.TypePrefix;
 @TypePrefix(value = "12", size = 8)
 public class CONSTANT_NameAndType implements CPInfo {
 
-    @BoundNumber(size = "16", byteOrder = BigEndian)
-    private int nameIndex;
-    @BoundNumber(size = "16", byteOrder = BigEndian)
-    private int descriptorIndex;
+  @BoundNumber(size = "16", byteOrder = BigEndian)
+  private int nameIndex;
+  @BoundNumber(size = "16", byteOrder = BigEndian)
+  private int descriptorIndex;
+
+  public int getNameIndex() {
+    return nameIndex;
+  }
+
+  public int getDescriptorIndex() {
+    return descriptorIndex;
+  }
 }

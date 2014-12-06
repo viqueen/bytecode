@@ -15,4 +15,8 @@ import org.codehaus.preon.buffer.ByteOrder;
 public class CONSTANT_Class implements CPInfo{
     @BoundNumber(size="16", byteOrder = ByteOrder.BigEndian)
     private int nameIndex;
+    
+    public int getNameIndex() {
+      return nameIndex;
+    }
 }

@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
 import java.util.ArrayList;
 
 import org.labset.bytecode.attr.AttributeInfo;
-import org.labset.bytecode.cp.CPInfo;
+import org.labset.bytecode.cp.*;
+import org.labset.bytecode.node.Variable;
 
 /**
  * @author hasnaer
@@ -35,6 +36,24 @@ public class Utils {
       }
     }
     return Optional.empty();
+  }
+
+  public static String getClassName(CPInfo[] pConstantPool, int pIndex) {
+    int classNameIndex = getCPInfo(pConstantPool, pIndex, CONSTANT_Class.class)
+        .get().getNameIndex();
+    return getCPInfo(pConstantPool, classNameIndex, CONSTANT_Utf8.class).get()
+        .getValue();
+  }
+
+  public static Variable getFieldVariable(CPInfo[] pConstantPool, int pIndex) {
+    CONSTANT_NameAndType nameAndType = getCPInfo(pConstantPool,
+        pIndex, CONSTANT_NameAndType.class).get();
+    String name = getCPInfo(pConstantPool, nameAndType.getNameIndex(),
+        CONSTANT_Utf8.class).get().getValue();
+    String descritpor = getCPInfo(pConstantPool,
+        nameAndType.getDescriptorIndex(), CONSTANT_Utf8.class).get().getValue();
+
+    return Variable.create(descritpor, name, false);
   }
 
   private static final Pattern descriptors = Pattern
