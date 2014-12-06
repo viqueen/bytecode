@@ -25,4 +25,9 @@ public class InvocationNode extends ValueNode {
   public InvocableNode getInvoke() {
     return invoke;
   }
+  
+  @Override
+  public String toString() {
+    return String.format("%s.%s", node, invoke);
+  }
 }

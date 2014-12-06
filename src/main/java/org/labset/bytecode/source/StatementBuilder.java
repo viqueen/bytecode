@@ -7,14 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import org.labset.bytecode.FieldInfo;
 import org.labset.bytecode.Opcode;
 import org.labset.bytecode.Utils;
 import org.labset.bytecode.attr.Code;
 import org.labset.bytecode.attr.LineNumberTable;
 import org.labset.bytecode.attr.LocalVariableTable;
 import org.labset.bytecode.cp.CONSTANT_Fieldref;
-import org.labset.bytecode.cp.CONSTANT_Utf8;
 import org.labset.bytecode.cp.CPInfo;
 import org.labset.bytecode.node.*;
 
@@ -76,31 +74,37 @@ public class StatementBuilder {
     switch (pOpcode) {
       case Opcode.BIPUSH:
         return consumeBIPUSH(pPos);
+
       case Opcode.ISTORE_0:
       case Opcode.ISTORE_1:
       case Opcode.ISTORE_2:
       case Opcode.ISTORE_3:
         return consumeSTOREVARIABLE(pPos, pOpcode - Opcode.ISTORE_0);
+
       case Opcode.DSTORE_0:
       case Opcode.DSTORE_1:
       case Opcode.DSTORE_2:
       case Opcode.DSTORE_3:
         return consumeSTOREVARIABLE(pPos, pOpcode - Opcode.DSTORE_0);
+
       case Opcode.FSTORE_0:
       case Opcode.FSTORE_1:
       case Opcode.FSTORE_2:
       case Opcode.FSTORE_3:
         return consumeSTOREVARIABLE(pPos, pOpcode - Opcode.FSTORE_0);
+
       case Opcode.LSTORE_0:
       case Opcode.LSTORE_1:
       case Opcode.LSTORE_2:
       case Opcode.LSTORE_3:
         return consumeSTOREVARIABLE(pPos, pOpcode - Opcode.LSTORE_0);
+
       case Opcode.ASTORE_0:
       case Opcode.ASTORE_1:
       case Opcode.ASTORE_2:
       case Opcode.ASTORE_3:
         return consumeSTOREVARIABLE(pPos, pOpcode - Opcode.ASTORE_0);
+
       case Opcode.ISTORE:
       case Opcode.LSTORE:
       case Opcode.FSTORE:
@@ -144,6 +148,17 @@ public class StatementBuilder {
       case Opcode.FLOAD:
         return consumeLOADVARIABLE(pPos + 1, byteCode[pPos + 1]);
 
+      case Opcode.ICONST_0:
+      case Opcode.ICONST_1:
+      case Opcode.ICONST_2:
+      case Opcode.ICONST_3:
+      case Opcode.ICONST_4:
+      case Opcode.ICONST_5:
+      case Opcode.ICONST_M1:
+        return consumeLOADCONST(pPos,
+            Integer.toString((int) (pOpcode - Opcode.ICONST_0)),
+            Primitive.PType.I);
+
       case Opcode.IADD:
       case Opcode.FADD:
       case Opcode.DADD:
@@ -157,19 +172,24 @@ public class StatementBuilder {
       case Opcode.LRETURN:
         return consumeRETURNVALUE(pPos);
 
+      case Opcode.ANEWARRAY:
+        return consumeANEWARRAY(pPos);
+
       case Opcode.PUTFIELD:
         return consumePUTFIELD(pPos);
 
       case Opcode.RETURN:
         return consumeRETURN(pPos);
-        
+
       case Opcode.NEW:
         return consumeNEW(pPos);
+
       case Opcode.DUP:
         return consumeDUP(pPos);
-        
+
       case Opcode.LDC:
         return consumeLDC(pPos, byteCode[pPos + 1]);
+
       default:
         throw new Exception(String.format("unknown opcode %s", pOpcode));
     }
@@ -184,6 +204,11 @@ public class StatementBuilder {
   private int consumeLOADVARIABLE(int pPos, int pIndex) {
     Variable variable = lvt.getVariable(pIndex);
     stack.push(variable);
+    return pPos + 1;
+  }
+
+  private int consumeLOADCONST(int pPos, String pValue, Primitive.PType pType) {
+    stack.push(new Primitive(pType, pValue, false));
     return pPos + 1;
   }
 
@@ -219,6 +244,15 @@ public class StatementBuilder {
     return pPos + 3;
   }
 
+  private int consumeANEWARRAY(int pPos) {
+    int index = unsignedShortAt(pPos + 1);
+    ValueNode count = (ValueNode) stack.pop();
+    String className = Utils.getClassName(constantPool, index);
+    stack.push(new ArrayReferenceNode(new Reference(className, "<NEW>", false),
+        new String[] { count.getValue() }));
+    return pPos + 3;
+  }
+
   private int unsignedShortAt(int pPos) {
     return ((byteCode[pPos] & 0xFF) << 8) + (byteCode[pPos + 1] & 0xFF);
   }
@@ -242,5 +276,4 @@ public class StatementBuilder {
   private int consumeLDC(int pPos, int pIndex) {
     throw new UnsupportedOperationException("NYI");
   }
-
 }

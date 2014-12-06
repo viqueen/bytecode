@@ -16,6 +16,11 @@ public class Primitive extends Variable {
     ptype = PType.valueOf(pDescriptor);
   }
   
+  public Primitive(PType pType, String pValue, boolean pArray) {
+    super(pType.toString(), pValue, pArray, Type.PRIMITIVE);
+    ptype = pType;
+  }
+  
   public PType getPType() {
     return ptype;
   }

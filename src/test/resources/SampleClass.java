@@ -28,4 +28,8 @@ public class SampleClass {
   public void setFirstName(String pFirstName){
     firstName = pFirstName;
   }
+  
+  public void initArray() {
+    friends = new String[]{};
+  }
 }

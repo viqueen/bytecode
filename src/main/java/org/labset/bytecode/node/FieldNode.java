@@ -20,4 +20,9 @@ public class FieldNode extends InvocableNode {
   public boolean isStatic() {
     return isStatic;
   }
+  
+  @Override
+  public String toString() {
+    return String.format("%s", getValue());
+  }
 }
