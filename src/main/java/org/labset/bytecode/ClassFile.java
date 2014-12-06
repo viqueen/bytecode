@@ -5,12 +5,14 @@ package org.labset.bytecode;
 
 import static org.codehaus.preon.buffer.ByteOrder.BigEndian;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.codehaus.preon.annotation.*;
 import org.codehaus.preon.annotation.Choices.Choice;
-import org.labset.bytecode.attr.AttributeInfo;
-import org.labset.bytecode.attr.DeprecatedAttribute;
-import org.labset.bytecode.attr.SourceFile;
+import org.labset.bytecode.attr.*;
 import org.labset.bytecode.cp.*;
+import org.labset.bytecode.node.Variable;
 
 /**
  * @author hasnaer
@@ -37,7 +39,7 @@ public class ClassFile {
       CONSTANT_Double.class, CONSTANT_NameAndType.class, CONSTANT_Utf8.class,
       CONSTANT_MethodHandle.class, CONSTANT_MethodType.class,
       CONSTANT_InvokeDynamic.class })
-   private CPInfo[] constantPool;
+  private CPInfo[] constantPool;
 
   @BoundNumber(size = "16", byteOrder = BigEndian)
   private int accessFlags;
@@ -81,9 +83,53 @@ public class ClassFile {
   public MethodInfo[] getMethods() {
     return methods;
   }
-  
+
   public CPInfo[] getConstantPool() {
     return constantPool;
   }
-  
+
+  @Init
+  public void init() {
+    for (MethodInfo method : methods) {
+      Utils.getAttribute(method.getAttributes(), Code.class).ifPresent(
+          code -> {
+            // create a LocalVariableTable if none
+            Optional<LocalVariableTable> lvtOpt = Utils.getAttribute(
+                code.getAttributes(), LocalVariableTable.class);
+            if (lvtOpt.isPresent()) {
+              LocalVariableTable lvt = lvtOpt.get();
+              init(lvt);
+              code.setLocalVariableTable(lvt);
+            } else {
+              LocalVariableTable localVariableTable = new LocalVariableTable();
+              List<String> types = Utils.getParamTypes(Utils
+                  .getCPInfo(constantPool, method.getDescriptorIndex(),
+                      CONSTANT_Utf8.class).get().getValue());
+              code.setLocalVariableTable(localVariableTable);
+              int index = 1;
+              for (String type : types) {
+                localVariableTable.getVariables()
+                    .put(
+                        index,
+                        Variable.create(type, String.format("pArg%s", index),
+                            false));
+                index++;
+              }
+              code.setLocalVariableTable(localVariableTable);
+            }
+          });
+    }
+  }
+
+  private void init(LocalVariableTable pLvt) {
+    for (LocalVariableTable.Entry entry : pLvt.getEntries()) {
+      String name = Utils
+          .getCPInfo(constantPool, entry.getNameIndex(), CONSTANT_Utf8.class)
+          .get().getValue();
+      String descriptor = Utils
+          .getCPInfo(constantPool, entry.getDescriptorIndex(),
+              CONSTANT_Utf8.class).get().getValue();
+      pLvt.getVariables().put(entry.getIndex(), Variable.create(descriptor, name, false));
+    }
+  }
 }

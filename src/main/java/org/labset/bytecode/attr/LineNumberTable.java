@@ -13,15 +13,15 @@ import org.codehaus.preon.annotation.BoundNumber;
  *
  */
 public class LineNumberTable extends AttributeInfo {
+  @BoundNumber(size = "16", byteOrder = BigEndian)
+  private int lineNumberTableLength;
+  @BoundList(size = "lineNumberTableLength")
+  private Entry[] lineNumberTable;
+
+  public static class Entry {
     @BoundNumber(size = "16", byteOrder = BigEndian)
-    private int lineNumberTableLength;
-    @BoundList(size="lineNumberTableLength")
-    private Entry[] lineNumberTable;
-    
-    public static class Entry {
-        @BoundNumber(size = "16", byteOrder = BigEndian)
-        private int startPC;
-        @BoundNumber(size = "16", byteOrder = BigEndian)
-        private int lineNumber;
-    }
+    private int startPC;
+    @BoundNumber(size = "16", byteOrder = BigEndian)
+    private int lineNumber;
+  }
 }

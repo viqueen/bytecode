@@ -5,9 +5,12 @@ package org.labset.bytecode;
 
 import static org.codehaus.preon.buffer.ByteOrder.BigEndian;
 
+import java.util.Optional;
+
 import org.codehaus.preon.annotation.BoundList;
 import org.codehaus.preon.annotation.Choices;
 import org.codehaus.preon.annotation.Choices.Choice;
+import org.codehaus.preon.annotation.Init;
 import org.labset.bytecode.attr.*;
 
 /**
@@ -27,4 +30,5 @@ public class MethodInfo extends ClassMemberInfo {
   public AttributeInfo[] getAttributes() {
     return attributes;
   }
+
 }
