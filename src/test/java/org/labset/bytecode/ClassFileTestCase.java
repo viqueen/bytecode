@@ -50,16 +50,10 @@ public class ClassFileTestCase {
   @Test
   public void testDecode() throws DecodingException {
     ClassFile classFile = Codecs.decode(codec, byteCode);
-    CPInfo[] constantPool = classFile.getConstantPool();
-
     Assert.assertEquals(5, classFile.getFields().length);
     Assert.assertEquals(4, classFile.getMethods().length);
-
     FieldInfo field = classFile.getFields()[0];
-    Assert.assertEquals("firstName",
-        Utils
-            .getCPInfo(constantPool, field.getNameIndex(), CONSTANT_Utf8.class)
-            .get().getValue());
+    Assert.assertEquals("firstName", field.getName());
   }
 
   @Test
@@ -67,11 +61,7 @@ public class ClassFileTestCase {
     ClassFile classFile = Codecs.decode(codec, byteCode);
     CPInfo[] constantPool = classFile.getConstantPool();
     MethodInfo sumMethod = classFile.getMethods()[1];
-    Assert.assertEquals(
-        "sum",
-        Utils
-            .getCPInfo(constantPool, sumMethod.getNameIndex(),
-                CONSTANT_Utf8.class).get().getValue());
+    Assert.assertEquals("sum", sumMethod.getName());
     Code code = Utils.getAttribute(sumMethod.getAttributes(), Code.class).get();
     StatementBuilder builder = new StatementBuilder(constantPool, code);
     List<BaseNode> statements = builder.build();
@@ -84,29 +74,19 @@ public class ClassFileTestCase {
     ClassFile classFile = Codecs.decode(codec, byteCode);
     CPInfo[] constantPool = classFile.getConstantPool();
     MethodInfo method = classFile.getMethods()[2];
-    Assert
-        .assertEquals(
-            "setFirstName",
-            Utils
-                .getCPInfo(constantPool, method.getNameIndex(),
-                    CONSTANT_Utf8.class).get().getValue());
+    Assert.assertEquals("setFirstName", method.getName());
     Code code = Utils.getAttribute(method.getAttributes(), Code.class).get();
     StatementBuilder builder = new StatementBuilder(constantPool, code);
     List<BaseNode> statements = builder.build();
     Assert.assertEquals(1, statements.size());
   }
-  
+
   @Test
   public void testDecompileMethodWithNewArray() throws Exception {
     ClassFile classFile = Codecs.decode(codec, byteCode);
     CPInfo[] constantPool = classFile.getConstantPool();
     MethodInfo method = classFile.getMethods()[3];
-    Assert
-        .assertEquals(
-            "initArray",
-            Utils
-                .getCPInfo(constantPool, method.getNameIndex(),
-                    CONSTANT_Utf8.class).get().getValue());
+    Assert.assertEquals("initArray", method.getName());
     Code code = Utils.getAttribute(method.getAttributes(), Code.class).get();
     StatementBuilder builder = new StatementBuilder(constantPool, code);
     List<BaseNode> statements = builder.build();
